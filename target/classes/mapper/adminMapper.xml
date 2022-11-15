@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- IMemberDao 전용 Mapper: 회원관련 sql -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 1.parameterType에 1개의 Type만 올 수 있다. Type 여러개인 경우 생략할 것.
+	2.parameterType이 bean(DTO)인 경우 #{필드명}
+	3.parameterType이 변수인 경우 #{변수명}
+	4.parameterType이 Map<key,value> 인 경우 #{key}
+	5.resultType 1또는 1개이상의 레코드를 검색하려는 경우	bean(DTO)타입만 명시
+	6.#{} : 문자열인 경우 ''추가됨
+	7.${} : 문자열 변환없이 문자 그대로 입력(예, 컬럼명 전달시)
+-->
+<!-- <mapper namespace="memberMapper">
+	<select id="getLoginResult" parameterType="com.icia.board.bean.Member"
+	       resultType="boolean">
+		SELECT COUNT(*) FROM M WHERE M_ID=#{m_id} AND M_PW=#{m_pw}
+	</select>
+</mapper> -->
+<mapper namespace="daiabongd.com.project.Dao.IAdminDao">
+<insert id = "adminJoin" parameterType="admin"
+useGeneratedKeys="true" keyProperty="admin_code">
+insert into admin (admin_code,admin_id,admin_pw,admin_name,admin_phone,admin_level)
+        values (#{admin_code},#{admin_id},#{admin_pw},#{admin_name},#{admin_phone},#{admin_level})
+       <selectKey keyProperty="admin_code" resultType="int"
+			order="BEFORE">
+			SELECT admin_seq.NEXTVAL FROM DUAL 
+		</selectKey>
+</insert>
+<insert id = "Goods_Insert" parameterType="goods"
+useGeneratedKeys="true" keyProperty="goods_code">
+insert into goods(goods_code,goods_class,goods_id,goods_firstshot,goods_title,goods_contents,goods_price,goods_salenumber,goods_comment,goods_hit,goods_inven,goods_regdate,goods_updatedate)
+values (#{goods_code},#{goods_class},#{goods_id},#{goods_firstshot},#{goods_title},#{goods_contents},#{goods_price},DEFAULT,DEFAULT,DEFAULT,#{goods_inven},sysdate,DEFAULT)          
+             <selectKey keyProperty="goods_code" resultType="int"
+			order="BEFORE">
+			SELECT goods_seq.NEXTVAL FROM DUAL 
+		</selectKey>
+</insert>
+<insert id = "Introduce_Insert" parameterType="introduce"
+useGeneratedKeys="true" keyProperty="introduce_code">
+insert into introduce(introduce_code,introduce_id,introduce_pw,introduce_name,introduce_phone,introduce_bitch,introduce_profile,introduce_project,introduce_category)
+values (#{introduce_code},#{introduce_id},#{introduce_pw},#{introduce_name},#{introduce_phone},sysdate,#{introduce_profile},#{introduce_project},#{introduce_category})          
+             <selectKey keyProperty="introduce_code" resultType="int"
+			order="BEFORE">
+			SELECT introduce_seq.NEXTVAL FROM DUAL 
+		</selectKey>
+</insert>
+<insert id = "main_product_insert" parameterType="product">
+insert into product(product_goods_code,product_goods_firstshot,product_goods_step,product_goods_type,product_goods_class)
+values (#{goods_chk},#{product_goods_firstshot},1,#{selectValue},#{product_class})          
+
+</insert>
+	<update id="main_product_update">
+		UPDATE product
+		SET 
+		product_goods_code = #{goods_chk},
+		product_goods_firstshot = #{product_goods_firstshot},
+		product_goods_type =#{selectValue},
+		product_goods_class =#{product_class}
+		where product_goods_step = 1
+	</update>
+	
+<select id="select_goods_board" resultType="goods">
+		<![CDATA[
+		SELECT *FROM 
+		( SELECT /*+INDEX_DESC(goods PK_goods_code)*/ ROWNUM RN, goods.* 
+		FROM ( 
+		select * from goods 
+		where goods_class= #{URL} ORDER BY GOODS_REGDATE DESC )
+		goods WHERE ROWNUM<=#{pageNum}*12) 
+WHERE RN>=#{pageNum}*12-11 
+		]]>
+	</select>
+
+	
+	
+	
+	
+		<update id="Goods_Update">
+		UPDATE GOODS
+		SET 
+		GOODS_FIRSTSHOT = #{goods_firstshot},
+		GOODS_TITLE = #{goods_title},
+		GOODS_CONTENTS = #{goods_contents},
+		GOODS_PRICE =  #{goods_price},
+		GOODS_INVEN =  #{goods_inven}
+		where goods_code = #{goods_code}
+	</update>
+		<update id="goods_update_nofile">
+		UPDATE GOODS
+		SET 
+		GOODS_TITLE = #{goods_title},
+		GOODS_CONTENTS = #{goods_contents},
+		GOODS_PRICE =  #{goods_price},
+		GOODS_INVEN =  #{goods_inven}
+		where goods_code = #{goods_code}
+	</update>
+	
+</mapper>
+
+
+
+

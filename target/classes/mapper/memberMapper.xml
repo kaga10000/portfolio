@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- IMemberDao 전용 Mapper: 회원관련 sql -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 1.parameterType에 1개의 Type만 올 수 있다. Type 여러개인 경우 생략할 것. 2.parameterType이 
+	bean(DTO)인 경우 #{필드명} 3.parameterType이 변수인 경우 #{변수명} 4.parameterType이 Map<key,value> 
+	인 경우 #{key} 5.resultType 1또는 1개이상의 레코드를 검색하려는 경우 bean(DTO)타입만 명시 6.#{} : 
+	문자열인 경우 ''추가됨 7.${} : 문자열 변환없이 문자 그대로 입력(예, 컬럼명 전달시) -->
+<!-- <mapper namespace="memberMapper"> <select id="getLoginResult" parameterType="com.icia.board.bean.Member" 
+	resultType="boolean"> SELECT COUNT(*) FROM M WHERE M_ID=#{m_id} AND M_PW=#{m_pw} 
+	</select> </mapper> -->
+<mapper namespace="daiabongd.com.project.Dao.IMemberDao">
+	<insert id="memberJoin" parameterType="member"
+		useGeneratedKeys="true" keyProperty="member_code">
+		insert into
+		member(member_code,member_id,member_pw,member_name,member_phone)
+		values
+		(#{member_code},#{member_id},#{member_pw},#{member_name},#{member_phone})
+		<selectKey keyProperty="member_code" resultType="int"
+			order="BEFORE">
+			SELECT member_seq.NEXTVAL FROM DUAL
+		</selectKey>
+	</insert>
+
+	<insert id="insertReview" parameterType="review"
+		useGeneratedKeys="true" keyProperty="review_code">
+		insert into
+		review(review_goods_code,review_code,review_Class,review_id,review_firstshot,review_title,review_contents,review_hit,review_star,review_comment,review_regdate,review_updatedate)
+		values
+		(#{review_goods_code},#{review_code},#{review_Class},#{review_id},#{review_firstshot},#{review_title},#{review_contents},DEFAULT,#{review_star},DEFAULT,SYSDATE,DEFAULT)
+		<selectKey keyProperty="review_code" resultType="int"
+			order="BEFORE">
+			SELECT review_seq.NEXTVAL FROM DUAL
+		</selectKey>
+	</insert>
+
+	<select id="getMemberInfo" parameterType="String"
+		resultType="member">
+		SELECT * FROM MEMBER WHERE Member_ID=#{member_id}
+	</select>
+	<select id="member_cart_select" parameterType="String"
+	resultType="goods">
+SELECT 
+	G.GOODS_CODE,C.MEMBER_ID,G.GOODS_TITLE, G.GOODS_FIRSTSHOT,G.GOODS_PRICE,C.GOODS_COUNT,C.GOODS_CODE 
+FROM 
+	GOODS G, CART C
+WHERE
+	G.GOODS_CODE = C.GOODS_CODE
+AND 
+    G.GOODS_CODE = #{test_code}
+AND
+C.MEMBER_ID = #{id}
+	</select>
+<select id="match_member_pw" parameterType="String" resultType="String">
+SELECT member_pw FROM member WHERE member_id=#{member_id} 
+</select>
+	<insert id="insertReply" parameterType="reply"
+		useGeneratedKeys="true" keyProperty="reply_code">
+		insert into
+		Reply(reply_goods_code,reply_review_code,reply_code,reply_id,reply_contents,reply_star,reply_emoticon,reply_regdate)
+		values
+		(#{r_gcode},#{r_code},#{reply_code},#{r_id},#{r_contents},#{r_star},NULL,SYSDATE)
+		<selectKey keyProperty="reply_code" resultType="int"
+			order="BEFORE">
+			SELECT REPLY_REQ.NEXTVAL FROM DUAL
+		</selectKey>
+	</insert>
+	<delete id="board_delete">
+		delete from goods where goods_code = #{test_arr}
+	</delete>
+	<delete id="review_delete">
+		delete from review where review_goods_code =
+		#{test_arr}
+	</delete>
+	<delete id="reply_Delete">
+		delete from reply where reply_goods_code =
+		#{test_arr}
+	</delete>
+	<delete id="my_cart_Delete">
+		delete from cart where goods_code =
+		#{test_arr} and member_id = #{id}
+	</delete>
+
+	<select id="select_emotional_product" resultType="goods">
+	<![CDATA[
+SELECT  *FROM (
+				SELECT /*+INDEX_DESC(goods PK_goods_code)*/ ROWNUM RN, goods.*
+				FROM  ( select *
+                from goods
+                where goods_class= #{product_class}
+]]>
+		<choose>
+			<when
+				test='product_type.equals("NEWGOODS") or product_type == "NEWGOODS".toString()'>
+<![CDATA[ 
+ORDER BY GOODS_REGDATE DESC )goods
+WHERE ROWNUM<=1*8)
+WHERE RN>=1*7-8 
+
+]]>
+			</when>
+			<when
+				test='product_type.equals("LOWINVEN") or product_type == "LOWINVEN".toString()'>
+<![CDATA[
+ORDER BY GOODS_INVEN  )goods
+WHERE ROWNUM<=1*8)
+WHERE RN>=1*7-8 
+
+
+]]>
+			</when>
+			<when
+				test='product_type.equals("HIGHINVEN") or product_type == "HIGHINVEN".toString()'>
+<![CDATA[
+ORDER BY GOODS_INVEN DESC  )goods
+WHERE ROWNUM<=1*8)
+WHERE RN>=1*7-8 
+
+
+]]>
+			</when>
+			<when
+				test='product_type.equals("LOWMONEY") or product_type == "LOWMONEY".toString()'>
+<![CDATA[
+ORDER BY GOODS_PRICE   )goods
+WHERE ROWNUM<=1*8)
+WHERE RN>=1*7-8 
+
+]]>
+			</when>
+			<when
+				test='product_type.equals("HIGHMONEY") or product_type == "HIGHMONEY".toString()'>
+<![CDATA[
+ORDER BY GOODS_PRICE DESC  )goods
+WHERE ROWNUM<=1*8)
+WHERE RN>=1*7-8
+]]>
+			</when>
+		</choose>
+	</select>
+
+	<select id="boardSearch" parameterType="hashmap"
+		resultType="goods">
+	     <![CDATA[
+SELECT  * FROM 
+(SELECT /*+INDEX_DESC(goods PK_goods_code)*/ ROWNUM RN,${search_goods}.*
+FROM  ( select * from ${search_goods}
+			]]>
+		<choose>
+			<when test='search_type != "" and search_type == "N".toString()'>
+			 <![CDATA[
+where goods_title like '%'||#{search_name}||'%'
+]]>
+			</when>
+			<when test='search_type != "" and search_type == "C".toString()'>
+			<![CDATA[
+where goods_code like '%'||#{search_name}||'%' 
+]]>
+			</when>
+			<when test='search_type != "" and search_type == "I".toString()'>
+			<![CDATA[
+where goods_id like '%'||#{search_name}||'%' 
+]]>
+			</when>
+		</choose>
+		<if test='search_money_1 neq ""'>
+			<![CDATA[
+			and goods_price > ${search_money_1}
+			]]>
+		</if>
+		<if test='search_money_2 neq ""'>
+			<![CDATA[
+			and goods_price > ${search_money_2}
+			]]>
+		</if>
+		<choose>
+			<when test='search_order != "" and search_order == "N".toString()'>
+			<![CDATA[
+			ORDER BY GOODS_REGDATE DESC
+			]]>
+			</when>
+			<when test='search_order != "" and search_order == "H".toString()'>
+			<![CDATA[
+			ORDER BY GOODS_PRICE DESC
+			]]>
+			</when>
+			<when test='search_order != "" and search_order == "L".toString()'>
+			<![CDATA[
+			ORDER BY GOODS_PRICE ASC
+			]]>
+			</when>
+		</choose>
+			   <![CDATA[
+)${search_goods}
+WHERE ROWNUM<=${pageNum}*12)
+WHERE RN>=${pageNum}*12-11
+]]>
+	</select>
+	
+	<select id="getsearchCount" parameterType="hashmap"
+		resultType="int">
+	     <![CDATA[
+SELECT  count(*) FROM 
+(SELECT /*+INDEX_DESC(goods PK_goods_code)*/ ROWNUM RN,${search_goods}.*
+FROM  ( select * from ${search_goods}
+			]]>
+		<choose>
+			<when test='search_type != "" and search_type == "N".toString()'>
+			 <![CDATA[
+where goods_title like '%'||#{search_name}||'%'
+]]>
+			</when>
+			<when test='search_type != "" and search_type == "C".toString()'>
+			<![CDATA[
+where goods_code like '%'||#{search_name}||'%' 
+]]>
+			</when>
+			<when test='search_type != "" and search_type == "I".toString()'>
+			<![CDATA[
+where goods_id like '%'||#{search_name}||'%' 
+]]>
+			</when>
+		</choose>
+		<if test='search_money_1 != ""'>
+			<![CDATA[
+			and goods_price > ${search_money_1}
+			]]>
+		</if>
+		<if test='search_money_2 != ""'>
+			<![CDATA[
+			and goods_price < ${search_money_2}
+			]]>
+		</if>
+		<choose>
+			<when test='search_order == "N".toString()'>
+			<![CDATA[
+			ORDER BY GOODS_REGDATE DESC
+			]]>
+			</when>
+			<when test='search_order == "H".toString()'>
+			<![CDATA[
+			ORDER BY GOODS_PRICE DESC
+			]]>
+			</when>
+			<when test='search_order == "L".toString()'>
+			<![CDATA[
+			ORDER BY GOODS_PRICE ASC
+			]]>
+			</when>
+		</choose>
+			   <![CDATA[
+)${search_goods}
+)
+]]>
+</select>
+
+<insert id="showping_basket_insert" parameterType="cart"
+		useGeneratedKeys="true" keyProperty="cart_code">
+		insert into
+		cart(cart_code,member_id,goods_code,goods_count)
+		values
+		(${cart_code},${member_id},${goods_code},${goods_count})
+		<selectKey keyProperty="cart_code" resultType="int"
+			order="BEFORE">
+			SELECT cart_seq.NEXTVAL FROM DUAL
+		</selectKey>
+	</insert>
+
+</mapper>
+
+
+
+

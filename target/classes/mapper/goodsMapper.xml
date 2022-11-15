@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- IMemberDao 전용 Mapper: 회원관련 sql -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 1.parameterType에 1개의 Type만 올 수 있다. Type 여러개인 경우 생략할 것. 2.parameterType이 
+	bean(DTO)인 경우 #{필드명} 3.parameterType이 변수인 경우 #{변수명} 4.parameterType이 Map<key,value> 
+	인 경우 #{key} 5.resultType 1또는 1개이상의 레코드를 검색하려는 경우 bean(DTO)타입만 명시 6.#{} : 
+	문자열인 경우 ''추가됨 7.${} : 문자열 변환없이 문자 그대로 입력(예, 컬럼명 전달시) -->
+<!-- <mapper namespace="memberMapper"> <select id="getLoginResult" parameterType="com.icia.board.bean.Member" 
+	resultType="boolean"> SELECT COUNT(*) FROM M WHERE M_ID=#{m_id} AND M_PW=#{m_pw} 
+	</select> </mapper> -->
+<mapper namespace="daiabongd.com.project.Dao.IGoodsDao">
+	<select id="goods_select" resultType="goods">
+		<![CDATA[
+			SELECT *FROM (
+				SELECT /*+INDEX_DESC(goods PK_goods_code)*/ ROWNUM RN, goods.*
+				FROM goods
+				WHERE ROWNUM<=#{pageNum}*12 and goods_class = #{category})
+			WHERE RN>=#{pageNum}*12-11 
+		]]>
+	</select>
+
+	<select id="goods_select_Sort" resultType="goods">
+	<![CDATA[
+SELECT  *FROM (
+				SELECT /*+INDEX_DESC(goods PK_goods_code)*/ ROWNUM RN, goods.*
+				FROM  ( select *
+                from goods
+                where goods_class= #{Url}
+]]>
+		<choose>
+			<when test='method == "1".toString()'>
+<![CDATA[ 
+ORDER BY GOODS_REGDATE DESC )goods
+WHERE ROWNUM<=#{pageNum}*12)
+WHERE RN>=#{pageNum}*12-11 
+]]>
+			</when>
+			<when test='method == "2".toString()'>
+<![CDATA[
+ORDER BY GOODS_PRICE  )goods
+WHERE ROWNUM<=#{pageNum}*12)
+WHERE RN>=#{pageNum}*12-11 
+]]>
+			</when>
+			<when test='method == "3".toString()'>
+<![CDATA[
+ORDER BY GOODS_PRICE DESC  )goods
+WHERE ROWNUM<=#{pageNum}*12)
+WHERE RN>=#{pageNum}*12-11 
+]]>
+			</when>
+		</choose>
+	</select>
+</mapper>
+
+
+
+
